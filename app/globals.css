@@ -1,0 +1,231 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 2rem;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 1rem;
+  font-size: 2rem;
+}
+
+.upload-area {
+  border: 3px dashed #667eea;
+  border-radius: 12px;
+  padding: 3rem;
+  text-align: center;
+  background: #f8f9ff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 2rem;
+}
+
+.upload-area:hover {
+  border-color: #764ba2;
+  background: #f0f2ff;
+}
+
+.upload-area.dragover {
+  border-color: #764ba2;
+  background: #e8ebff;
+}
+
+.file-input {
+  display: none;
+}
+
+.batch-selector {
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.batch-selector label {
+  font-weight: 600;
+  color: #333;
+}
+
+.batch-selector select {
+  padding: 0.5rem 1rem;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+}
+
+.file-list {
+  margin-top: 2rem;
+}
+
+.file-item {
+  padding: 1rem;
+  background: #f8f9ff;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border: 1px solid #e0e7ff;
+  transition: all 0.2s ease;
+}
+
+.file-item:hover {
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+  border-color: #c7d2fe;
+}
+
+.file-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.file-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-processing {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.status-completed {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.status-error {
+  background: #f8d7da;
+  color: #842029;
+}
+
+.process-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.process-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+}
+
+.process-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.download-button {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s ease;
+}
+
+.download-button:hover {
+  background: #218838;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s ease;
+}
+
+/* Scrollbar styling for logs */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.error-message {
+  background: #f8d7da;
+  color: #842029;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.success-message {
+  background: #d1e7dd;
+  color: #0f5132;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
