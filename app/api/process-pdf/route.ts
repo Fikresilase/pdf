@@ -15,13 +15,14 @@ Your task is to extract ALL visible text from the provided image.
 
 STRICT REQUIREMENTS:
 - This is a SINGLE page from a document. Extract text ONLY from this image.
-- Perform OCR on scanned content; do not skip low-quality or faint text.
+- Perform OCR on scanned content.
 - Preserve the original reading order based on visual layout.
 - Detect structure: Titles, Headings, Paragraphs, Lists, Tables.
 - Do NOT merge unrelated sections.
 - Do NOT summarize, paraphrase, or translate.
 - Do NOT include content that is not visible in this specific image.
-- Keep the text exactly as it appears.
+- Keep the text exactly as it appears only the visible text.
+- Do not include any other text that is not visible or very confusing in the image.
 
 OUTPUT FORMAT:
 Return ONLY the markdown content. No explanations.`;
