@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   const updated = {
     ...existing,
     ...update,
-    logs: [...(existing.logs || []), update.log || ''].filter(Boolean).slice(-50), // Keep last 50 logs
+    logs: [...(existing.logs || []), update.log || ''].filter(Boolean), // Keep all logs
   }
 
   progressStore.set(fileId, updated)

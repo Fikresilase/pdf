@@ -294,14 +294,25 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`Successfully extracted ${images.length} image(s) from PDF`);
+    await updateProgress(fileId, {
+      totalPages: images.length,
+      processedPages: 0,
+      currentChunk: 0,
+      totalChunks: Math.ceil(images.length / 2),
+      status: `Successfully extracted ${images.length} image(s) from PDF`,
+      log: `Successfully extracted ${images.length} image(s) from PDF`,
+    });
 
     // Initialize progress tracking
     const totalPages = images.length;
+    const totalChunks = Math.ceil(totalPages / 2);
     await updateProgress(fileId, {
       totalPages,
       processedPages: 0,
       currentChunk: 0,
-      status: "Starting OCR processing...",
+      totalChunks,
+      status: 'Starting OCR processing...',
+      log: `\n=== Starting OCR Processing ===\nTotal pages: ${totalPages}\nProcessing in chunks of 2 pages\n`,
     });
 
     // Process images with Gemini
@@ -329,7 +340,8 @@ export async function POST(request: NextRequest) {
 
       await updateProgress(fileId, {
         currentChunk: chunkNumber,
-        status: `Processing chunk ${chunkNumber}/${totalChunks}...`,
+        status: `Processing chunk ${chunkNumber}/${totalChunks} (pages ${chunkStart + 1}-${chunkEnd})...`,
+        log: `\n[Chunk ${chunkNumber}/${totalChunks}] Processing pages ${chunkStart + 1}-${chunkEnd}...`,
       });
 
       let chunkSuccess = false;
@@ -338,9 +350,19 @@ export async function POST(request: NextRequest) {
 
       for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
         try {
+          console.log(`  Attempt ${attempt}/${MAX_RETRIES + 1} for chunk ${chunkNumber}...`);
+          await updateProgress(fileId, {
+            log: `  Attempt ${attempt}/${MAX_RETRIES + 1} for chunk ${chunkNumber}...`,
+          });
+
           // Process all images in chunk in parallel
           const chunkPromises = chunk.map(async (imagePath, index) => {
             const pageNumber = chunkStart + index + 1;
+            console.log(`    → Sending page ${pageNumber} to Gemini API...`);
+            await updateProgress(fileId, {
+              status: `Sending page ${pageNumber} to Gemini API...`,
+              log: `    → Sending page ${pageNumber} to Gemini API...`,
+            });
 
             const imageData = fs.readFileSync(imagePath);
             const base64Image = imageData.toString("base64");
@@ -369,7 +391,12 @@ export async function POST(request: NextRequest) {
               text = lines.join("\n");
             }
 
-            console.log(`    ✓ Page ${pageNumber} processed`);
+            console.log(`    ✓ Page ${pageNumber} processed successfully`);
+            await updateProgress(fileId, {
+              processedPages: chunkStart + index + 1,
+              status: `Page ${pageNumber} processed successfully`,
+              log: `    ✓ Page ${pageNumber} processed successfully`,
+            });
             return { pageNumber, text };
           });
 
@@ -381,16 +408,39 @@ export async function POST(request: NextRequest) {
             .join("\n\n---\n\n");
 
           chunkSuccess = true;
+          console.log(`  ✓ Chunk ${chunkNumber} completed successfully (pages ${chunkStart + 1}-${chunkEnd})`);
+          const progressPercent = Math.round((chunkEnd / totalPages) * 100);
+          console.log(`  Progress: ${chunkEnd}/${totalPages} pages (${progressPercent}%)`);
+          
+          await updateProgress(fileId, {
+            processedPages: chunkEnd,
+            status: `Chunk ${chunkNumber} completed (${chunkEnd}/${totalPages} pages - ${progressPercent}%)`,
+            log: `  ✓ Chunk ${chunkNumber} completed successfully (pages ${chunkStart + 1}-${chunkEnd})\n  Progress: ${chunkEnd}/${totalPages} pages (${progressPercent}%)`,
+          });
+          
           break;
         } catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error));
-          console.error(`  ✗ Attempt ${attempt} failed:`, lastError.message);
-          if (attempt <= MAX_RETRIES)
+          console.error(`  ✗ Attempt ${attempt} failed for chunk ${chunkNumber}:`, lastError.message);
+          await updateProgress(fileId, {
+            log: `  ✗ Attempt ${attempt} failed for chunk ${chunkNumber}: ${lastError.message}`,
+          });
+          
+          if (attempt <= MAX_RETRIES) {
+            console.log(`  Retrying chunk ${chunkNumber}... (${MAX_RETRIES + 1 - attempt} retries left)`);
+            await updateProgress(fileId, {
+              log: `  Retrying chunk ${chunkNumber}... (${MAX_RETRIES + 1 - attempt} retries left)`,
+            });
             await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+          }
         }
       }
 
       if (!chunkSuccess) {
+        console.error(`\n✗ Failed to process chunk ${chunkNumber} after ${MAX_RETRIES + 1} attempts`);
+        await updateProgress(fileId, {
+          log: `\n✗ Failed to process chunk ${chunkNumber} after ${MAX_RETRIES + 1} attempts`,
+        });
         throw new Error(
           `Failed to process chunk ${chunkNumber}: ${lastError?.message}`,
         );
@@ -401,6 +451,14 @@ export async function POST(request: NextRequest) {
         fullMarkdown += "\n\n---\n\n";
       }
     }
+
+    console.log(`\n=== OCR Processing Complete ===`);
+    console.log(`Successfully processed all ${totalPages} pages\n`);
+    await updateProgress(fileId, {
+      processedPages: totalPages,
+      status: 'OCR processing complete. Generating PDF...',
+      log: `\n=== OCR Processing Complete ===\nSuccessfully processed all ${totalPages} pages\n`,
+    });
 
     console.log(`\n=== OCR Processing Complete ===`);
 
@@ -446,6 +504,11 @@ export async function POST(request: NextRequest) {
       margin: { top: "20mm", right: "15mm", bottom: "20mm", left: "15mm" },
     });
     await browser.close();
+    console.log('PDF generation completed');
+    await updateProgress(fileId, {
+      status: 'PDF generation completed',
+      log: 'PDF generation completed',
+    });
 
     const pdfBuffer = fs.readFileSync(outputPdfPath);
 

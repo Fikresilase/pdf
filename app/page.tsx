@@ -112,7 +112,7 @@ export default function Home() {
             )
           )
 
-          // Start polling for progress
+          // Start polling for progress - more frequent for real-time updates
           progressInterval = setInterval(async () => {
             try {
               const progressResponse = await fetch(`/api/progress?fileId=${fileId}`)
@@ -133,7 +133,7 @@ export default function Home() {
             } catch (error) {
               // Silently fail - progress polling is not critical
             }
-          }, 500) // Poll every 500ms
+          }, 200) // Poll every 200ms for real-time updates
           
           const formData = new FormData()
           formData.append('file', fileWithStatus.file)
@@ -378,7 +378,7 @@ export default function Home() {
                       </div>
                     )}
 
-                    {/* Detailed Logs */}
+                    {/* Detailed Logs - Show ALL logs exactly as in console */}
                     {fileWithStatus.progressDetails.logs && fileWithStatus.progressDetails.logs.length > 0 && (
                       <div style={{ marginTop: '0.5rem' }}>
                         <div style={{ 
@@ -389,11 +389,11 @@ export default function Home() {
                         }}>
                           <strong style={{ color: '#495057', fontSize: '0.875rem' }}>Processing Log:</strong>
                           <span style={{ color: '#6c757d', fontSize: '0.75rem' }}>
-                            Showing last {Math.min(fileWithStatus.progressDetails.logs.length, 30)} entries
+                            {fileWithStatus.progressDetails.logs.length} entries
                           </span>
                         </div>
                         <div style={{ 
-                          maxHeight: '250px', 
+                          maxHeight: '400px', 
                           overflowY: 'auto', 
                           fontFamily: 'Monaco, "Courier New", monospace', 
                           fontSize: '0.75rem', 
@@ -402,9 +402,10 @@ export default function Home() {
                           padding: '0.75rem', 
                           borderRadius: '6px', 
                           border: '1px solid #dee2e6',
-                          lineHeight: '1.5'
+                          lineHeight: '1.5',
+                          whiteSpace: 'pre-wrap'
                         }}>
-                          {fileWithStatus.progressDetails.logs.slice(-30).map((log: string, logIndex: number) => {
+                          {fileWithStatus.progressDetails.logs.map((log: string, logIndex: number) => {
                             const isSuccess = log.includes('✓') || log.includes('successfully')
                             const isError = log.includes('✗') || log.includes('failed') || log.includes('error')
                             const isSending = log.includes('→') || log.includes('Sending')
@@ -430,19 +431,17 @@ export default function Home() {
                               <div 
                                 key={logIndex} 
                                 style={{ 
-                                  marginBottom: '0.35rem', 
+                                  marginBottom: '0.2rem', 
                                   whiteSpace: 'pre-wrap',
-                                  padding: '0.25rem 0.5rem',
-                                  borderRadius: '4px',
+                                  padding: '0.2rem 0.4rem',
+                                  borderRadius: '3px',
                                   background: logBg,
                                   color: logColor,
-                                  borderLeft: logBg !== 'transparent' ? `3px solid ${logColor}` : 'none',
-                                  transition: 'all 0.2s ease'
+                                  borderLeft: logBg !== 'transparent' ? `2px solid ${logColor}` : 'none',
+                                  transition: 'all 0.2s ease',
+                                  fontFamily: 'inherit'
                                 }}
                               >
-                                <span style={{ opacity: 0.7, marginRight: '0.5rem', fontSize: '0.7rem' }}>
-                                  [{new Date().toLocaleTimeString()}]
-                                </span>
                                 {log}
                               </div>
                             )
